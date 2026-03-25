@@ -1,0 +1,33 @@
+# Learning Folder
+/Learning
+
+# Node dependencies
+node_modules/
+client/node_modules/
+
+# Build output
+dist/
+build/
+
+# Vite/Cache
+.vite/
+.cache/
+
+# Coverage / test
+coverage/
+
+# Logs
+*.log
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/
+
+# TypeScript incremental info (harmless if not used)
+*.tsbuildinfo
+
+# Env files
+.env
+.env.*
+!*.env.example

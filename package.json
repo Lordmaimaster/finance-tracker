@@ -1,0 +1,17 @@
+{
+  "name": "finance-tracker",
+  "version": "1.0.0",
+  "description": "Financial tracking app with React, Node.js, and PostgreSQL",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm --prefix client run dev\" \"npm --prefix server run dev\"",
+    "build": "npm --prefix client run build",
+    "start": "npm --prefix server run start"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
