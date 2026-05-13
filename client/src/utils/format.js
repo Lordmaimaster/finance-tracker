@@ -1,7 +1,7 @@
 import { format } from 'date-fns'
 
 export const formatCurrency = (value) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(
+  new Intl.NumberFormat('ms-MY', { style: 'currency', currency: 'MYR' }).format(
     Number(value ?? 0),
   )
 
