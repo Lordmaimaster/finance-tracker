@@ -1,59 +1,21 @@
 services:
-
-  # ── PostgreSQL ─────────────────────────────────────────────────────────────
-  postgres:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_USER: ${PGUSER}
-      POSTGRES_PASSWORD: ${PGPASSWORD}
-      POSTGRES_DB: ${PGDATABASE}
-    volumes:
-      # Named volume keeps your data when the container is recreated or updated.
-      # Without this, every `docker compose down` would wipe the database.
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      # The backend depends on this check. Docker will not start the backend
-      # until postgres is actually accepting connections, not just "running".
-      test: ["CMD-SHELL", "pg_isready -U ${PGUSER} -d ${PGDATABASE}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-    # Postgres is intentionally not exposed on a host port.
-    # Only the backend (on the same Docker network) needs to reach it.
-
-  # ── Backend ────────────────────────────────────────────────────────────────
-  backend:
-    build: ./server
-    environment:
-      # "postgres" here is the service name above — Docker's internal DNS
-      # resolves it to the correct container IP automatically.
-      PGHOST: postgres
-      PGPORT: 5432
-      PGUSER: ${PGUSER}
-      PGPASSWORD: ${PGPASSWORD}
-      PGDATABASE: ${PGDATABASE}
-      PORT: 4000
-    ports:
-      - "4000:4000"
-    depends_on:
-      postgres:
-        # Waits for the healthcheck to pass before starting, not just for the
-        # container to exist. Prevents "connection refused" errors on cold boot.
-        condition: service_healthy
-    restart: unless-stopped
-
-  # ── Frontend ───────────────────────────────────────────────────────────────
-  frontend:
+  app:
     build:
-      context: ./client
+      context: .
       args:
-        # Passed into the Vite build so the compiled JS knows where the API is.
-        # This must match your homelab's LAN IP or hostname as seen from a browser.
-        VITE_API_URL: ${VITE_API_URL}
+        # Override to serve the API from a different origin (e.g. a reverse proxy).
+        # Leave as /api for the standard single-container setup.
+        VITE_API_URL: ${VITE_API_URL:-/api}
     ports:
-      - "80:80"
-    depends_on:
-      - backend
+      - "${PORT:-3000}:${PORT:-3000}"
+    environment:
+      PGUSER: ${PGUSER:-app}
+      PGPASSWORD: ${PGPASSWORD:-changeme}
+      PGDATABASE: ${PGDATABASE:-finance_tracker}
+      PORT: ${PORT:-3000}
+    volumes:
+      # Named volume keeps database data across container restarts and rebuilds.
+      - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
 
 volumes:
