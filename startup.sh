@@ -10,8 +10,16 @@ if [ ! -f "$PGDATA/PG_VERSION" ]; then
   su postgres -s /bin/sh -c "initdb --username=postgres --auth=trust -D $PGDATA"
 fi
 
+# PostgreSQL needs this socket directory to exist
+mkdir -p /var/run/postgresql
+chown postgres:postgres /var/run/postgresql
+
 echo "Starting PostgreSQL..."
-su postgres -s /bin/sh -c "pg_ctl start -D $PGDATA -l /tmp/pg.log"
+su postgres -s /bin/sh -c "pg_ctl start -D $PGDATA -l /tmp/pg.log" || {
+  echo "--- PostgreSQL failed to start. Log: ---"
+  cat /tmp/pg.log
+  exit 1
+}
 
 echo "Waiting for PostgreSQL to be ready..."
 until su postgres -s /bin/sh -c "pg_isready -q"; do sleep 1; done
