@@ -29,10 +29,11 @@ until su postgres -s /bin/sh -c "pg_isready -q"; do sleep 1; done
 # into literal values inside the temp script.
 cat > /tmp/provision.sh << PROVISION
 #!/bin/sh
-psql -U postgres -tc "SELECT 1 FROM pg_roles WHERE rolname='${PGUSER}'" | grep -q 1 || \
-  psql -U postgres -c "CREATE ROLE \"${PGUSER}\" LOGIN PASSWORD '${PGPASSWORD}'"
-psql -U postgres -tc "SELECT 1 FROM pg_database WHERE datname='${PGDATABASE}'" | grep -q 1 || \
-  psql -U postgres -c "CREATE DATABASE \"${PGDATABASE}\" OWNER \"${PGUSER}\""
+# Connect explicitly to the postgres system database so PGDATABASE env var is ignored
+psql -U postgres -d postgres -tc "SELECT 1 FROM pg_roles WHERE rolname='${PGUSER}'" | grep -q 1 || \
+  psql -U postgres -d postgres -c "CREATE ROLE \"${PGUSER}\" LOGIN PASSWORD '${PGPASSWORD}'"
+psql -U postgres -d postgres -tc "SELECT 1 FROM pg_database WHERE datname='${PGDATABASE}'" | grep -q 1 || \
+  psql -U postgres -d postgres -c "CREATE DATABASE \"${PGDATABASE}\" OWNER \"${PGUSER}\""
 PROVISION
 
 echo "Provisioning database role and schema..."
